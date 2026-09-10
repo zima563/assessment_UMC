@@ -4,6 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import EmployeesPage from './pages/EmployeesPage';
 
 export default function App() {
   return (
@@ -20,6 +21,16 @@ export default function App() {
               <ProtectedRoute>
                 <Layout>
                   <DashboardPage />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employees"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <EmployeesPage />
                 </Layout>
               </ProtectedRoute>
             }
