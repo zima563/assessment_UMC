@@ -78,7 +78,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # 1. Ensure Docker & Docker Compose are installed on AWS EC2
+            # Ensure Docker & Docker Compose are installed on AWS EC2
             if ! command -v docker &> /dev/null; then
               echo "Installing Docker..."
               sudo apt-get update
@@ -87,7 +87,7 @@ jobs:
               sudo usermod -aG docker $USER
             fi
 
-            # 2. Navigate to project folder or clone repository on first deployment
+            # Navigate to project folder or clone repository on first deployment
             if [ ! -d "/home/ubuntu/assessment_UMC" ]; then
               echo "Cloning repository..."
               git clone https://github.com/${{ github.repository }}.git /home/ubuntu/assessment_UMC
@@ -95,17 +95,17 @@ jobs:
             
             cd /home/ubuntu/assessment_UMC
             
-            # 3. Pull latest code changes from GitHub main branch
-            echo "Pulling latest code..."
+            # Pull latest code changes
+            echo "Pulling latest code from main branch..."
             git fetch --all
             git reset --hard origin/main || git reset --hard origin/master
 
-            # 4. Rebuild and restart all production Docker containers
+            # Rebuild and restart all production Docker containers
             echo "Building and launching Docker containers..."
             docker compose up -d --build
 
-            # 5. Execute database seed script automatically
+            # Execute database seed script automatically inside backend container
             echo "Seeding database accounts..."
             docker exec -i ems_backend_api npm run seed || true
             
-            echo "✅ Continuous Deployment Completed Successfully!"
+            echo "✅ Continuous Deployment to AWS EC2 Completed Successfully!"
