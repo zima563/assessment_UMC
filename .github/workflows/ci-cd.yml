@@ -71,22 +71,41 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
-      - name: SSH and Deploy on AWS EC2
+      - name: Deploy via SSH to AWS EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # Navigate to project directory or clone if first run
+            # 1. Ensure Docker & Docker Compose are installed on AWS EC2
+            if ! command -v docker &> /dev/null; then
+              echo "Installing Docker..."
+              sudo apt-get update
+              sudo apt-get install -y docker.io docker-compose
+              sudo systemctl enable --now docker
+              sudo usermod -aG docker $USER
+            fi
+
+            # 2. Navigate to project folder or clone repository on first deployment
             if [ ! -d "/home/ubuntu/assessment_UMC" ]; then
+              echo "Cloning repository..."
               git clone https://github.com/${{ github.repository }}.git /home/ubuntu/assessment_UMC
             fi
+            
             cd /home/ubuntu/assessment_UMC
-            git pull origin main || git pull origin master
             
-            # Rebuild and start production Docker containers
+            # 3. Pull latest code changes from GitHub main branch
+            echo "Pulling latest code..."
+            git fetch --all
+            git reset --hard origin/main || git reset --hard origin/master
+
+            # 4. Rebuild and restart all production Docker containers
+            echo "Building and launching Docker containers..."
             docker compose up -d --build
-            
-            # Seed initial database accounts if needed
+
+            # 5. Execute database seed script automatically
+            echo "Seeding database accounts..."
             docker exec -i ems_backend_api npm run seed || true
+            
+            echo "✅ Continuous Deployment Completed Successfully!"
