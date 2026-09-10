@@ -10,6 +10,10 @@ async function bootstrap() {
     await AppDataSource.initialize();
     console.log('Database connection established successfully.');
 
+    console.log('Running pending database migrations...');
+    await AppDataSource.runMigrations();
+    console.log('Migrations executed successfully.');
+
     app.listen(config.port, () => {
       console.log(`Backend server running on http://localhost:${config.port} in ${config.nodeEnv} mode`);
     });
