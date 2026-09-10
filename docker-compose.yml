@@ -52,6 +52,7 @@ services:
     container_name: ems_frontend_ui
     restart: always
     ports:
+      - "80:80"
       - "5173:80"
     depends_on:
       - backend
