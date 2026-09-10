@@ -1,28 +1,22 @@
 import 'reflect-metadata';
-import express, { Request, Response } from 'express';
-import cors from 'cors';
-import helmet from 'helmet';
-import dotenv from 'dotenv';
+import app from './app';
+import { AppDataSource } from './config/data-source';
+import { config } from './config/env';
 
-dotenv.config();
+// Initialize Database connection then start Express server
+async function bootstrap() {
+  try {
+    console.log('Connecting to MySQL database via TypeORM...');
+    await AppDataSource.initialize();
+    console.log('Database connection established successfully.');
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+    app.listen(config.port, () => {
+      console.log(`Backend server running on http://localhost:${config.port} in ${config.nodeEnv} mode`);
+    });
+  } catch (error) {
+    console.error('Fatal error during database connection initialization:', error);
+    process.exit(1);
+  }
+}
 
-// Security and utility middlewares
-app.use(helmet());
-app.use(cors());
-app.use(express.json());
-
-// Base health check endpoint
-app.get('/health', (_req: Request, res: Response) => {
-  res.status(200).json({
-    status: 'OK',
-    message: 'Backend server is running smoothly',
-    timestamp: new Date().toISOString(),
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
+bootstrap();
