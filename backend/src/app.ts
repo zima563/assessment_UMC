@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 
 import authRoutes from './routes/auth.routes';
+import departmentRoutes from './routes/department.routes';
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/departments', departmentRoutes);
 
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
