@@ -7,9 +7,9 @@ on:
     branches: [ main, master ]
 
 jobs:
-  # Backend Verification Job
+  # 1. Backend Verification Job
   backend-checks:
-    name: Backend Lint & Build Check
+    name: Backend Type-check & Build Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -19,20 +19,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
 
       - name: Install Backend Dependencies
         run: |
           cd backend
-          npm ci
+          npm install
 
       - name: Type-check and Build Backend
         run: |
           cd backend
           npm run build
 
-  # Frontend Verification Job
+  # 2. Frontend Verification Job
   frontend-checks:
     name: Frontend Type-check & Build Check
     runs-on: ubuntu-latest
@@ -44,20 +42,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
 
       - name: Install Frontend Dependencies
         run: |
           cd frontend
-          npm ci
+          npm install
 
       - name: Type-check and Build Frontend
         run: |
           cd frontend
           npm run build
 
-  # Docker Composition Validation Job
+  # 3. Docker Composition Validation Job
   docker-validation:
     name: Docker Build Validation
     runs-on: ubuntu-latest
@@ -67,3 +63,30 @@ jobs:
 
       - name: Validate Docker Compose Configuration
         run: docker compose config
+
+  # 4. Continuous Deployment to AWS EC2 Job
+  deploy-to-aws:
+    name: Continuous Deployment to AWS EC2
+    needs: [backend-checks, frontend-checks, docker-validation]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - name: SSH and Deploy on AWS EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            # Navigate to project directory or clone if first run
+            if [ ! -d "/home/ubuntu/assessment_UMC" ]; then
+              git clone https://github.com/${{ github.repository }}.git /home/ubuntu/assessment_UMC
+            fi
+            cd /home/ubuntu/assessment_UMC
+            git pull origin main || git pull origin master
+            
+            # Rebuild and start production Docker containers
+            docker compose up -d --build
+            
+            # Seed initial database accounts if needed
+            docker exec -i ems_backend_api npm run seed || true
