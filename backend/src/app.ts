@@ -4,6 +4,7 @@ import helmet from 'helmet';
 
 import authRoutes from './routes/auth.routes';
 import departmentRoutes from './routes/department.routes';
+import employeeRoutes from './routes/employee.routes';
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/departments', departmentRoutes);
+app.use('/api/employees', employeeRoutes);
 
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
