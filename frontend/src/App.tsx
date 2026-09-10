@@ -1,5 +1,3 @@
-import React from 'react';
-
 // Base App component
 export default function App() {
   return (

@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy source files and build TypeScript
 COPY . .
@@ -21,7 +21,7 @@ ENV NODE_ENV=production
 
 # Copy package files and install production dependencies only
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install --only=production
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist

@@ -16,6 +16,10 @@ app.use(cors());
 app.use(express.json());
 
 // API Documentation UI Endpoint
+app.get('/api-docs.json', (_req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // API Routes
