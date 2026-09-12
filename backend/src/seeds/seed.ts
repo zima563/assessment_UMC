@@ -5,10 +5,24 @@ import { Department } from '../entities/Department';
 import { Employee } from '../entities/Employee';
 import { hashPassword } from '../utils/password';
 
+async function connectWithRetry(retries = 10, delayMs = 2000) {
+  for (let i = 1; i <= retries; i++) {
+    try {
+      console.log(`Connecting to database for seeding (attempt ${i}/${retries})...`);
+      await AppDataSource.initialize();
+      console.log('Database connected successfully!');
+      return;
+    } catch (err) {
+      if (i === retries) throw err;
+      console.log(`Database connection refused/failed. Retrying in ${delayMs / 1000}s...`);
+      await new Promise((res) => setTimeout(res, delayMs));
+    }
+  }
+}
+
 async function seed() {
   try {
-    console.log('Connecting to database for seeding...');
-    await AppDataSource.initialize();
+    await connectWithRetry();
     await AppDataSource.runMigrations();
 
     const userRepository = AppDataSource.getRepository(User);

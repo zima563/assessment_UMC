@@ -3,12 +3,25 @@ import app from './app';
 import { AppDataSource } from './config/data-source';
 import { config } from './config/env';
 
+async function connectWithRetry(retries = 10, delayMs = 2000) {
+  for (let i = 1; i <= retries; i++) {
+    try {
+      console.log(`Connecting to MySQL database via TypeORM (attempt ${i}/${retries})...`);
+      await AppDataSource.initialize();
+      console.log('Database connection established successfully.');
+      return;
+    } catch (err) {
+      if (i === retries) throw err;
+      console.log(`MySQL connection failed/refused. Retrying in ${delayMs / 1000}s...`);
+      await new Promise((res) => setTimeout(res, delayMs));
+    }
+  }
+}
+
 // Initialize Database connection then start Express server
 async function bootstrap() {
   try {
-    console.log('Connecting to MySQL database via TypeORM...');
-    await AppDataSource.initialize();
-    console.log('Database connection established successfully.');
+    await connectWithRetry();
 
     console.log('Running pending database migrations...');
     await AppDataSource.runMigrations();
