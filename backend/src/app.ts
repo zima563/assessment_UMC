@@ -11,7 +11,11 @@ import dashboardRoutes from './routes/dashboard.routes';
 const app = express();
 
 // Express security and body-parsing middlewares
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
 app.use(cors());
 app.use(express.json());
 
