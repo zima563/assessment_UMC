@@ -10,6 +10,10 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
+        url: '/',
+        description: 'Current Production Host Server',
+      },
+      {
         url: 'http://localhost:5000',
         description: 'Local Server',
       },
