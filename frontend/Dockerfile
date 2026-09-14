@@ -5,10 +5,11 @@ WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci --prefer-offline --no-audit
 
 # Copy source code and build React Vite application
 COPY . .
+ENV NODE_OPTIONS="--max-old-space-size=512"
 RUN npm run build
 
 # Production Stage with Nginx

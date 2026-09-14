@@ -5,10 +5,11 @@ WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci --prefer-offline --no-audit
 
-# Copy source files and build TypeScript
+# Copy source files and build TypeScript with memory limit for low-RAM servers
 COPY . .
+ENV NODE_OPTIONS="--max-old-space-size=512"
 RUN npm run build
 
 # Production Stage
