@@ -1,31 +1,17 @@
-# Build Stage
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci --prefer-offline --no-audit
-
-# Copy source files and build TypeScript with memory limit for low-RAM servers
-COPY . .
-ENV NODE_OPTIONS="--max-old-space-size=512"
-RUN npm run build
-
 # Production Stage
-FROM node:20-alpine AS runner
+FROM node:20-alpine
 
 WORKDIR /app
 
 # Set environment
 ENV NODE_ENV=production
 
-# Copy package files and install production dependencies only
+# Copy package files and install production dependencies
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm ci --only=production --prefer-offline --no-audit
 
-# Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
+# Copy pre-built compiled JavaScript dist directory
+COPY dist ./dist
 
 # Expose backend port
 EXPOSE 5000
