@@ -105,9 +105,9 @@ jobs:
             git fetch --all
             git reset --hard origin/main || git reset --hard origin/master
 
-            # Rebuild and restart all production Docker containers
-            echo "Building and launching Docker containers..."
-            docker compose up -d --build
+            # Launch production Docker containers instantly without heavy remote builds
+            echo "Launching Docker containers..."
+            docker compose up -d
 
             # Execute database seed script automatically inside backend container
             echo "Seeding database accounts..."
